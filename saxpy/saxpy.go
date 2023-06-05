@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"zadatak/auth"
 
 	"gonum.org/v1/gonum/blas/blas32"
 )
@@ -34,7 +35,7 @@ func Init() {
 
 func Handler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/plain")
-	if request.Method == http.MethodPost {
+	if request.Method == http.MethodPost && auth.BasicAuth(&writer, request) {
 		var streamCopy bytes.Buffer
 		stream := io.TeeReader(request.Body, &streamCopy)
 
