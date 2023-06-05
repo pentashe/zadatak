@@ -1,0 +1,13 @@
+jmbag: 00363912345
+http:
+  address: 127.0.0.1
+  port: 8080
+users:
+  - name: Ivo Bilic-Subasic
+    jmbag: 0036522500
+    password: $2a$12$Xx9KzW1hl9C.BeX/jQevae9gTXS/BYlLgdkoZDqJcT2dxnQBcyc0G # lozinka
+  - name: Adela Zucko
+    jmbag: 0246096698
+    password: $2a$12$pcnQ9ooOIX4jrwuhlQ5Er.FTEArRmWHyFnMShkyjRArCDGprLCohe # password
+  - name: admin
+    password: $2a$12$X/4FOVCIzN7/0WTfr4g8eu6nRh3ikzAiVL2tK8bBuMHqhWeyCmPbi # adminpwd
