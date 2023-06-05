@@ -46,7 +46,7 @@ func Handler(writer http.ResponseWriter, request *http.Request) {
 			http.Error(writer, "JSON Format Error", http.StatusBadRequest)
 			return
 		} else if fetchedStruct.indexGreaterThanN() {
-			http.Error(writer, "X or Y index greater then N", http.StatusBadRequest)
+			http.Error(writer, "X or Y index greater than N", http.StatusBadRequest)
 			return
 		}
 
