@@ -30,3 +30,9 @@
   - throws **400: JSON Format Error** and **400: X or Y index greater than N**
   - Parallelism achieved using **WaitGroup** and **RWMutex**
   - SAXPY calculated with **gonum.org/v1/gonum** module
+
+### Building
+```
+$ go build -race
+$ ./zadatak
+```
