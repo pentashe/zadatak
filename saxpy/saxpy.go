@@ -27,7 +27,10 @@ var result string
 func Init() {
 	dataComplete.Add(int(2*N + 1))
 	saxpyComplete.Add(1)
+	go foo()
+}
 
+func foo() {
 	dataComplete.Wait()
 	result = saxpy(&sharedMap.m)
 	saxpyComplete.Done()
