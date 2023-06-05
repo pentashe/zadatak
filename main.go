@@ -123,7 +123,7 @@ func main() {
 	mux.HandleFunc("/0246096698", writeDataAdela)
 	mux.HandleFunc("/0036522500", writeDataIvo)
 
-	saxpy.Init()
+	go saxpy.Init()
 	mux.HandleFunc("/saxpy", saxpy.Handler)
 
 	srv := &http.Server{
