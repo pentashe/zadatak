@@ -10,8 +10,20 @@ import (
 	"time"
 	"zadatak/saxpy"
 
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/yaml.v3"
 )
+
+func isAuth(w http.ResponseWriter, r *http.Request) bool {
+	user, pass, ok := r.BasicAuth()
+	if ok && verifyUserPass(user, pass) {
+		return true
+	} else {
+		w.Header().Set("WWW-Authenticate", `Basic realm="api"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return false
+	}
+}
 
 func returnJMBAG(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -21,102 +33,113 @@ func returnJMBAG(w http.ResponseWriter, r *http.Request) {
 }
 
 func returnSum(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		w.Header().Set("Content-Type", "application/json")
-		queryParams := r.URL.Query()
-		aParam := queryParams.Get("a")
-		bParam := queryParams.Get("b")
+	if isAuth(w, r) {
+		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "application/json")
+			queryParams := r.URL.Query()
+			aParam := queryParams.Get("a")
+			bParam := queryParams.Get("b")
 
-		a, err := strconv.Atoi(aParam)
-		if err != nil {
-			http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
-			return
-		}
-		b, err := strconv.Atoi(bParam)
-		if err != nil {
-			http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
-			return
-		}
+			a, err := strconv.Atoi(aParam)
+			if err != nil {
+				http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
+				return
+			}
+			b, err := strconv.Atoi(bParam)
+			if err != nil {
+				http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
+				return
+			}
 
-		response := OpResponse{a, b, a + b}
-		_ = json.NewEncoder(w).Encode(response)
+			response := OpResponse{a, b, a + b}
+			_ = json.NewEncoder(w).Encode(response)
+		}
 	}
 }
 
 func returnMultiply(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		w.Header().Set("Content-Type", "application/json")
-		queryParams := r.URL.Query()
-		aParam := queryParams.Get("a")
-		bParam := queryParams.Get("b")
+	if isAuth(w, r) {
+		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "application/json")
+			queryParams := r.URL.Query()
+			aParam := queryParams.Get("a")
+			bParam := queryParams.Get("b")
 
-		a, err := strconv.Atoi(aParam)
-		if err != nil {
-			http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
-			return
-		}
-		b, err := strconv.Atoi(bParam)
-		if err != nil {
-			http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
-			return
-		}
+			a, err := strconv.Atoi(aParam)
+			if err != nil {
+				http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
+				return
+			}
+			b, err := strconv.Atoi(bParam)
+			if err != nil {
+				http.Error(w, "Parameter missing or not a number", http.StatusBadRequest)
+				return
+			}
 
-		response := OpResponse{a, b, a * b}
-		_ = json.NewEncoder(w).Encode(response)
+			response := OpResponse{a, b, a * b}
+			_ = json.NewEncoder(w).Encode(response)
+		}
 	}
 }
 
 func fetch(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		w.Header().Set("Content-Type", "application/json")
+	if isAuth(w, r) {
+		if r.Method == http.MethodPost {
+			w.Header().Set("Content-Type", "application/json")
 
-		type MyJSON struct {
-			URL string
+			type MyJSON struct {
+				URL string
+			}
+			var j MyJSON
+			_ = json.NewDecoder(r.Body).Decode(&j)
+
+			rs, _ := http.Get(j.URL)
+			_ = json.NewEncoder(w).Encode(rs.Header)
+			_ = rs.Body.Close()
 		}
-		var j MyJSON
-		_ = json.NewDecoder(r.Body).Decode(&j)
-
-		rs, _ := http.Get(j.URL)
-		_ = json.NewEncoder(w).Encode(rs.Header)
-		_ = rs.Body.Close()
 	}
 }
 
 func writeDataAdela(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		_ = json.NewDecoder(r.Body).Decode(&adela)
-		createFileAdela("student1.txt")
-	}
-	if r.Method == http.MethodGet {
-		w.Header().Set("Content-Type", "text/plain")
-
-		data, err := os.ReadFile("student1.txt")
-		if err != nil {
-			http.Error(w, "File not yet created", http.StatusNotFound)
+	if isAuth(w, r) {
+		if r.Method == http.MethodPost {
+			_ = json.NewDecoder(r.Body).Decode(&adela)
+			createFileAdela("student1.txt")
 		}
-		_, _ = w.Write(data)
+		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "text/plain")
+
+			data, err := os.ReadFile("student1.txt")
+			if err != nil {
+				http.Error(w, "File not yet created", http.StatusNotFound)
+			}
+			_, _ = w.Write(data)
+		}
 	}
 }
 
 func writeDataIvo(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		_ = json.NewDecoder(r.Body).Decode(&ivo)
-		createFileIvo("student2.txt")
-	}
-	if r.Method == http.MethodGet {
-		w.Header().Set("Content-Type", "text/plain")
-
-		data, err := os.ReadFile("student2.txt")
-		if err != nil {
-			http.Error(w, "File not yet created", http.StatusNotFound)
+	if isAuth(w, r) {
+		if r.Method == http.MethodPost {
+			_ = json.NewDecoder(r.Body).Decode(&ivo)
+			createFileIvo("student2.txt")
 		}
-		_, _ = w.Write(data)
+		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "text/plain")
+
+			data, err := os.ReadFile("student2.txt")
+			if err != nil {
+				http.Error(w, "File not yet created", http.StatusNotFound)
+			}
+			_, _ = w.Write(data)
+		}
 	}
 }
 
 func main() {
 	yamlFile, _ := os.ReadFile("config.yaml")
 	_ = yaml.Unmarshal(yamlFile, &c)
+	loadUserPass()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/jmbag", returnJMBAG)
@@ -135,6 +158,27 @@ func main() {
 		ReadHeaderTimeout: time.Second * 5}
 	log.Fatal(srv.ListenAndServe())
 }
+
+var usersPasswords map[string][]byte
+
+func loadUserPass() {
+	usersPasswords = make(map[string][]byte)
+	for _, u := range c.Users {
+		usersPasswords[u.Name] = []byte(u.Password)
+	}
+}
+func verifyUserPass(name, password string) bool {
+	wantPass, hasUser := usersPasswords[name]
+	if !hasUser {
+		return false
+	}
+	if cmperr := bcrypt.CompareHashAndPassword(wantPass, []byte(password)); cmperr == nil {
+		return true
+	}
+	return false
+}
+
+var c = &Config{}
 
 type Config struct {
 	JMBAG string `yaml:"jmbag"`
@@ -159,7 +203,6 @@ type Student struct {
 	JMBAG   string
 }
 
-var c = &Config{}
 var adela Student
 var ivo Student
 
