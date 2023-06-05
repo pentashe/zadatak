@@ -3,27 +3,33 @@ package saxpy
 import (
 	"bytes"
 	"encoding/json"
-	"gonum.org/v1/gonum/blas/blas32"
 	"io"
 	"net/http"
 	"strconv"
 	"sync"
+
+	"gonum.org/v1/gonum/blas/blas32"
 )
 
 const N uint = 3
 
 var dataComplete sync.WaitGroup
-var ch chan string
+var saxpyComplete sync.WaitGroup
+
 var sharedMap = struct {
 	sync.RWMutex
 	m map[string]map[uint]float32
 }{m: make(map[string]map[uint]float32)}
 
+var result string
+
 func Init() {
 	dataComplete.Add(int(2*N + 1))
-	ch = make(chan string, 200)
+	saxpyComplete.Add(1)
+
 	dataComplete.Wait()
-	ch <- saxpy(&sharedMap.m)
+	result = saxpy(&sharedMap.m)
+	saxpyComplete.Done()
 }
 
 func Handler(writer http.ResponseWriter, request *http.Request) {
@@ -71,7 +77,8 @@ func Handler(writer http.ResponseWriter, request *http.Request) {
 				}
 			}
 		}
-		_, _ = io.WriteString(writer, <-ch)
+		saxpyComplete.Wait()
+		_, _ = io.WriteString(writer, result)
 	}
 }
 
