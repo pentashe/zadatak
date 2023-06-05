@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
+	"zadatak/saxpy"
 
 	"gopkg.in/yaml.v3"
 )
@@ -116,14 +118,22 @@ func main() {
 	yamlFile, _ := os.ReadFile("config.yaml")
 	_ = yaml.Unmarshal(yamlFile, &c)
 
-	http.HandleFunc("/jmbag", returnJMBAG)
-	http.HandleFunc("/sum", returnSum)
-	http.HandleFunc("/multiply", returnMultiply)
-	http.HandleFunc("/fetch", fetch)
-	http.HandleFunc("/0246096698", writeDataAdela)
-	http.HandleFunc("/0036522500", writeDataIvo)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/jmbag", returnJMBAG)
+	mux.HandleFunc("/sum", returnSum)
+	mux.HandleFunc("/multiply", returnMultiply)
+	mux.HandleFunc("/fetch", fetch)
+	mux.HandleFunc("/0246096698", writeDataAdela)
+	mux.HandleFunc("/0036522500", writeDataIvo)
 
-	log.Fatal(http.ListenAndServe(c.HTTP.Address+":"+c.HTTP.Port, nil))
+	go saxpy.Init()
+	mux.HandleFunc("/saxpy", saxpy.Handler)
+
+	srv := &http.Server{
+		Addr:              c.HTTP.Address + ":" + c.HTTP.Port,
+		Handler:           mux,
+		ReadHeaderTimeout: time.Second * 5}
+	log.Fatal(srv.ListenAndServe())
 }
 
 type Config struct {
@@ -134,7 +144,7 @@ type Config struct {
 	} `yaml:"http"`
 	Users []struct {
 		Name     string `yaml:"name"`
-		Jmbag    string `yaml:"jmbag"`
+		JMBAG    string `yaml:"jmbag"`
 		Password string `yaml:"password"`
 	} `yaml:"users"`
 }
