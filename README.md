@@ -3,8 +3,8 @@
 /jmbag, /sum, /multiply, /fetch realizirani po specifikaciji
 
 ### /0036391234 (vas jmbag)
-  - throws *404: File not yet created*
-  - Write to file: Send json in POST body, e.g. {"ime": "Ivan", "prezime": "Horvat", "JMBAG": "0036391234"}
+  - throws **404: File not yet created**
+  - Write to file: Send json in POST body, e.g. `{"ime": "Ivan", "prezime": "Horvat", "JMBAG": "0036391234"}`
   - Read: response to GET is of type text/plain
 
 ### /saxpy
