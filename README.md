@@ -1,2 +1,2 @@
-# zadatak
-FER - GO 2023
+# FER - GO 2023
+
